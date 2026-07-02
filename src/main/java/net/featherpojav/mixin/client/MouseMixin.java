@@ -23,9 +23,9 @@ public class MouseMixin {
     )
     private void redirectChangeLookDirection(ClientPlayerEntity player, double dx, double dy) {
         if (FeatherPojavModClient.isFreelooking) {
-            // Apply camera orientation changes client-side only
-            FeatherPojavModClient.freelookYaw += dx;
-            FeatherPojavModClient.freelookPitch += dy;
+            // Apply camera orientation changes client-side only (scaled by standard 0.15F look conversion factor)
+            FeatherPojavModClient.freelookYaw += dx * 0.15F;
+            FeatherPojavModClient.freelookPitch += dy * 0.15F;
 
             // Clamp pitch to prevent camera flips
             if (FeatherPojavModClient.freelookPitch < -90.0f) {

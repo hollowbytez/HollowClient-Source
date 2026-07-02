@@ -36,6 +36,7 @@ public class FeatherPojavModClient implements ClientModInitializer {
     public static boolean isFreelooking = false;
     public static float freelookYaw = 0.0f;
     public static float freelookPitch = 0.0f;
+    public static net.minecraft.client.option.Perspective originalPerspective = net.minecraft.client.option.Perspective.FIRST_PERSON;
 
     @Override
     public void onInitializeClient() {
@@ -178,12 +179,26 @@ public class FeatherPojavModClient implements ClientModInitializer {
                         isFreelooking = true;
                         freelookYaw = client.player.getYaw();
                         freelookPitch = client.player.getPitch();
+                        if (client.options != null) {
+                            originalPerspective = client.options.getPerspective();
+                            client.options.setPerspective(net.minecraft.client.option.Perspective.THIRD_PERSON_BACK);
+                        }
                     }
                 } else {
-                    isFreelooking = false;
+                    if (isFreelooking) {
+                        isFreelooking = false;
+                        if (client.options != null) {
+                            client.options.setPerspective(originalPerspective);
+                        }
+                    }
                 }
             } else {
-                isFreelooking = false;
+                if (isFreelooking) {
+                    isFreelooking = false;
+                    if (client.options != null) {
+                        client.options.setPerspective(originalPerspective);
+                    }
+                }
             }
 
             // Handle Fullbright status (gamma option override)

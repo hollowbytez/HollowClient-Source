@@ -364,7 +364,15 @@ public class FeatherSettingsScreen extends Screen {
             int cardY = cardAreaY + 6 + row * (cardHeight + 5) - (int) scrollY;
             
             if (cardY + cardHeight >= cardAreaY && cardY <= cardAreaY + cardAreaH) {
-                // If gear clicked
+                boolean cardClicked = mouseX >= cardX && mouseX <= cardX + cardWidth && mouseY >= cardY && mouseY <= cardY + cardHeight;
+                
+                // Right click anywhere on the card to open config
+                if (cardClicked && button == 1 && card.onConfigure != null) {
+                    card.onConfigure.run();
+                    return true;
+                }
+
+                // If gear clicked (left click)
                 if (card.onConfigure != null) {
                     if (mouseX >= cardX + 5 && mouseX <= cardX + 18 && mouseY >= cardY + cardHeight - 16 && mouseY <= cardY + cardHeight - 3) {
                         card.onConfigure.run();
