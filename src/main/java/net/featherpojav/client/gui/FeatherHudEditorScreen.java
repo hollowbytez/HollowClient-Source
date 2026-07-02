@@ -51,9 +51,17 @@ public class FeatherHudEditorScreen extends Screen {
             new HudElement("Keystrokes", () -> cfg.keystrokesX, (x) -> cfg.keystrokesX = x, () -> cfg.keystrokesY, (y) -> cfg.keystrokesY = y, () -> cfg.keystrokes, 60, 60),
             new HudElement("Armor HUD", () -> cfg.armorHUDX, (x) -> cfg.armorHUDX = x, () -> cfg.armorHUDY, (y) -> cfg.armorHUDY = y, () -> cfg.armorHUD, cfg.armorHUDVertical ? 22 : 90, cfg.armorHUDVertical ? 90 : 22),
             new HudElement("Potion HUD", () -> cfg.potionHUDX, (x) -> cfg.potionHUDX = x, () -> cfg.potionHUDY, (y) -> cfg.potionHUDY = y, () -> cfg.potionHUD, 100, 40),
-            new HudElement("Coordinates", () -> cfg.coordHUDX, (x) -> cfg.coordHUDX = x, () -> cfg.coordHUDY, (y) -> cfg.coordHUDY = y, () -> cfg.coordHUD, 120, 20),
+            new HudElement("Coordinates", () -> cfg.coordHUDX, (x) -> cfg.coordHUDX = x, () -> cfg.coordHUDY, (y) -> cfg.coordHUDY = y, () -> cfg.coordHUD, 120, 26),
             new HudElement("Direction HUD", () -> cfg.directionHUDX, (x) -> cfg.directionHUDX = x, () -> cfg.directionHUDY, (y) -> cfg.directionHUDY = y, () -> cfg.directionHUD, 160, 20),
-            new HudElement("FPS HUD", () -> cfg.fpsHUDX, (x) -> cfg.fpsHUDX = x, () -> cfg.fpsHUDY, (y) -> cfg.fpsHUDY = y, () -> cfg.fpsHUD, 50, 12)
+            new HudElement("FPS HUD", () -> cfg.fpsHUDX, (x) -> cfg.fpsHUDX = x, () -> cfg.fpsHUDY, (y) -> cfg.fpsHUDY = y, () -> cfg.fpsHUD, 50, 14),
+            new HudElement("Combo Display", () -> cfg.comboDisplayX, (x) -> cfg.comboDisplayX = x, () -> cfg.comboDisplayY, (y) -> cfg.comboDisplayY = y, () -> cfg.comboDisplay, 65, 14),
+            new HudElement("Ping Display", () -> cfg.pingDisplayX, (x) -> cfg.pingDisplayX = x, () -> cfg.pingDisplayY, (y) -> cfg.pingDisplayY = y, () -> cfg.pingDisplay, 60, 14),
+            new HudElement("Playtime", () -> cfg.playtimeX, (x) -> cfg.playtimeX = x, () -> cfg.playtimeY, (y) -> cfg.playtimeY = y, () -> cfg.playtime, 100, 14),
+            new HudElement("Reach Display", () -> cfg.reachDisplayX, (x) -> cfg.reachDisplayX = x, () -> cfg.reachDisplayY, (y) -> cfg.reachDisplayY = y, () -> cfg.reachDisplay, 70, 14),
+            new HudElement("Server Address", () -> cfg.serverAddressX, (x) -> cfg.serverAddressX = x, () -> cfg.serverAddressY, (y) -> cfg.serverAddressY = y, () -> cfg.serverAddress, 110, 14),
+            new HudElement("Speed Meter", () -> cfg.speedMeterX, (x) -> cfg.speedMeterX = x, () -> cfg.speedMeterY, (y) -> cfg.speedMeterY = y, () -> cfg.speedMeter, 85, 14),
+            new HudElement("Stopwatch", () -> cfg.stopwatchX, (x) -> cfg.stopwatchX = x, () -> cfg.stopwatchY, (y) -> cfg.stopwatchY = y, () -> cfg.stopwatch, 95, 14),
+            new HudElement("Item Counter", () -> cfg.itemCounterX, (x) -> cfg.itemCounterX = x, () -> cfg.itemCounterY, (y) -> cfg.itemCounterY = y, () -> cfg.itemCounter, 65, 14)
         };
         
         // Return button

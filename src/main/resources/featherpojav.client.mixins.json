@@ -9,7 +9,8 @@
 		"KeyboardMixin",
 		"ItemEntityRendererMixin",
 		"MouseMixin",
-		"CameraMixin"
+		"CameraMixin",
+		"WorldMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

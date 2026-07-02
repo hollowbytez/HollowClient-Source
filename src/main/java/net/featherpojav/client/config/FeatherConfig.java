@@ -14,22 +14,86 @@ public class FeatherConfig {
     public static FeatherConfig INSTANCE = new FeatherConfig();
 
     // General Client Mod Toggles
-    public boolean toggleSprint = true;
+    // Category: HUD
     public boolean keystrokes = true;
     public boolean armorHUD = true;
     public boolean potionHUD = true;
     public boolean directionHUD = true;
     public boolean coordHUD = true;
     public boolean fpsHUD = true;
-    public boolean fullbright = false;
+    public boolean comboDisplay = false;
+    public boolean pingDisplay = false;
+    public boolean playtime = false;
+    public boolean reachDisplay = false;
+    public boolean serverAddress = false;
+    public boolean speedMeter = false;
+    public boolean stopwatch = false;
+    public boolean itemCounter = false;
+    public boolean armorBar = false;
+    public boolean armorStatus = false;
+    public boolean bossBar = false;
+    public boolean hearts = false;
+    public boolean packDisplay = false;
+    public boolean scoreboard = false;
+
+    // Category: Gameplay
+    public boolean autoText = false;
+    public boolean autoPerspective = false;
+    public boolean blockIndicator = false;
+    public boolean customAdvancements = false;
+    public boolean customChat = false;
+    public boolean deathInfo = false;
+    public boolean dropPrevention = false;
+    public boolean elytras = false;
+    public boolean fovChanger = false;
+    public boolean hitIndicator = false;
+    public boolean horses = false;
+    public boolean hypixelUtilities = false;
+    public boolean inventoryManagement = false;
+    public boolean itemInfo = false;
+    public boolean jumpReset = false;
+    public boolean reconnect = false;
+    public boolean saturation = false;
+    public boolean screenshotUtility = false;
+    public boolean searchKeybind = false;
+    public boolean snaplook = false;
+    public boolean toggleSprint = true;
     public boolean zoom = true;
     public boolean freelook = true;
-    public boolean customCrosshair = false;
-    public boolean timeChanger = false;
-    public boolean itemPhysics = true;
     public boolean autoGG = true;
-    
-    // HUD Settings (Coordinates and Styles)
+    public boolean timeChanger = false;
+
+    // Category: Performance
+    public boolean backups = false;
+    public boolean cullLogs = false;
+    public boolean customFog = false;
+    public boolean itemDespawn = false;
+
+    // Category: Cosmetics
+    public boolean animations = false;
+    public boolean blockOverlay = false;
+    public boolean fullbright = false;
+    public boolean camera = false;
+    public boolean colorSaturation = false;
+    public boolean customCrosshair = false;
+    public boolean customF3 = false;
+    public boolean damageIndicator = false;
+    public boolean darkMode = false;
+    public boolean discordRPC = false;
+    public boolean glint = false;
+    public boolean hitbox = false;
+    public boolean lightLevel = false;
+    public boolean lootBeams = false;
+    public boolean mobOverlay = false;
+    public boolean motionBlur = false;
+    public boolean mousestrokes = false;
+    public boolean nametags = false;
+    public boolean nickHider = false;
+    public boolean packOrganizer = false;
+    public boolean soundFilters = false;
+    public boolean itemPhysics = true;
+
+    // HUD Positions
     public int keystrokesX = 10;
     public int keystrokesY = 100;
     
@@ -48,19 +112,42 @@ public class FeatherConfig {
     
     public int fpsHUDX = 10;
     public int fpsHUDY = 50;
+
+    public int comboDisplayX = 10;
+    public int comboDisplayY = 70;
+
+    public int pingDisplayX = 10;
+    public int pingDisplayY = 150;
+
+    public int playtimeX = 10;
+    public int playtimeY = 170;
+
+    public int reachDisplayX = 10;
+    public int reachDisplayY = 190;
+
+    public int serverAddressX = 10;
+    public int serverAddressY = 210;
+
+    public int speedMeterX = 10;
+    public int speedMeterY = 230;
+
+    public int stopwatchX = 10;
+    public int stopwatchY = 250;
+
+    public int itemCounterX = 10;
+    public int itemCounterY = 270;
     
-    // Module Customizations
-    public int crosshairColor = 0xFF00FF00; // Green
+    // Crosshair Customize
+    public int crosshairColor = 0xFF00FF00;
     public float crosshairSize = 5.0f;
     public float crosshairThickness = 1.0f;
     public float crosshairGap = 2.0f;
     
-    public long timeChangerTicks = 6000; // Day
+    public long timeChangerTicks = 6000;
     public float particleMultiplier = 1.0f;
     
-    // Style settings
-    public int themeColor = 0xFF9C27B0; // Feather Purple Accent
-    public int backgroundColor = 0x80000000; // Dark overlay translucent
+    public int themeColor = 0xFF9C27B0;
+    public int backgroundColor = 0x80000000;
     public int textColor = 0xFFFFFFFF;
     
     public static void load() {

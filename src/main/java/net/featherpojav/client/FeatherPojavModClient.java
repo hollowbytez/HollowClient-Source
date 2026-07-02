@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.featherpojav.client.config.FeatherConfig;
 import net.featherpojav.client.gui.FeatherSettingsScreen;
 import net.featherpojav.client.hud.FeatherHudRenderer;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
@@ -19,6 +20,7 @@ public class FeatherPojavModClient implements ClientModInitializer {
     public static KeyBinding openHudEditorKey;
     public static KeyBinding zoomKey;
     public static KeyBinding freelookKey;
+    public static KeyBinding stopwatchKey;
 
     // Zoom state
     public static boolean isZooming = false;
@@ -64,9 +66,25 @@ public class FeatherPojavModClient implements ClientModInitializer {
                 "category.featherpojav"
         ));
 
+        stopwatchKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.featherpojav.stopwatch",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_H,
+                "category.featherpojav"
+        ));
+
         // Register HUD Render Callback
         HudRenderCallback.EVENT.register((context, tickCounter) -> {
             FeatherHudRenderer.renderHUD(context, tickCounter.getTickDelta(false));
+        });
+
+        // Register Attack Entity Callback (for Combo & Reach tracker)
+        net.fabricmc.fabric.api.event.player.AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+            if (world.isClient() && player == MinecraftClient.getInstance().player) {
+                FeatherHudRenderer.onHit();
+                FeatherHudRenderer.onAttackEntity(entity);
+            }
+            return net.minecraft.util.ActionResult.PASS;
         });
 
         // Client tick event handling
@@ -81,6 +99,11 @@ public class FeatherPojavModClient implements ClientModInitializer {
             // Handle HUD Editor keybind
             if (openHudEditorKey.wasPressed()) {
                 client.setScreen(new net.featherpojav.client.gui.FeatherHudEditorScreen(null));
+            }
+
+            // Handle Stopwatch keybind
+            if (stopwatchKey.wasPressed() && FeatherConfig.INSTANCE.stopwatch) {
+                FeatherHudRenderer.toggleStopwatch();
             }
 
             // Handle Zoom status

@@ -7,7 +7,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,6 +18,18 @@ public class FeatherHudRenderer {
     
     private static boolean lastLMB = false;
     private static boolean lastRMB = false;
+
+    // PvP / Stats Tracking fields
+    public static int comboCount = 0;
+    public static long lastHitTime = 0;
+    public static double lastReach = 0.0;
+    
+    private static final long sessionStartTime = System.currentTimeMillis();
+
+    // Stopwatch states
+    public static long stopwatchStart = 0;
+    public static boolean stopwatchRunning = false;
+    public static long stopwatchElapsed = 0;
 
     public static void addLeftClick() {
         leftClicks.add(System.currentTimeMillis());
@@ -38,6 +49,52 @@ public class FeatherHudRenderer {
         long now = System.currentTimeMillis();
         rightClicks.removeIf(time -> now - time > 1000);
         return rightClicks.size();
+    }
+
+    public static void onHit() {
+        long now = System.currentTimeMillis();
+        if (now - lastHitTime < 2000) {
+            comboCount++;
+        } else {
+            comboCount = 1;
+        }
+        lastHitTime = now;
+    }
+
+    public static void onAttackEntity(net.minecraft.entity.Entity entity) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.player != null && entity != null) {
+            lastReach = client.player.distanceTo(entity);
+        }
+    }
+
+    public static String getPlaytime() {
+        long duration = System.currentTimeMillis() - sessionStartTime;
+        long seconds = (duration / 1000) % 60;
+        long minutes = (duration / (1000 * 60)) % 60;
+        long hours = (duration / (1000 * 60 * 60));
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    public static void toggleStopwatch() {
+        if (stopwatchRunning) {
+            stopwatchElapsed += System.currentTimeMillis() - stopwatchStart;
+            stopwatchRunning = false;
+        } else {
+            stopwatchStart = System.currentTimeMillis();
+            stopwatchRunning = true;
+        }
+    }
+
+    public static String getStopwatchTime() {
+        long elapsed = stopwatchElapsed;
+        if (stopwatchRunning) {
+            elapsed += System.currentTimeMillis() - stopwatchStart;
+        }
+        long seconds = (elapsed / 1000) % 60;
+        long minutes = (elapsed / (1000 * 60)) % 60;
+        long millis = (elapsed % 1000) / 10;
+        return String.format("%02d:%02d.%02d", minutes, seconds, millis);
     }
 
     public static void updateCPS(MinecraftClient client) {
@@ -232,6 +289,102 @@ public class FeatherHudRenderer {
                 context.drawText(tr, fullText, px + 6, py + offsetY + 3, 0xFFFFFFFF, false);
                 offsetY += 16;
             }
+        }
+
+        // 7. Combo Display
+        if (cfg.comboDisplay) {
+            int cx = cfg.comboDisplayX;
+            int cy = cfg.comboDisplayY;
+            context.fill(cx, cy, cx + 65, cy + 14, 0x80000000);
+            context.fill(cx, cy, cx + 2, cy + 14, cfg.themeColor);
+            context.drawText(tr, "Combo: " + comboCount, cx + 6, cy + 3, 0xFFFFFFFF, false);
+        }
+
+        // 8. Ping Display
+        if (cfg.pingDisplay) {
+            int px = cfg.pingDisplayX;
+            int py = cfg.pingDisplayY;
+            int ping = 0;
+            if (client.getNetworkHandler() != null && client.player != null) {
+                var entry = client.getNetworkHandler().getPlayerListEntry(client.player.getUuid());
+                if (entry != null) {
+                    ping = entry.getLatency();
+                }
+            }
+            context.fill(px, py, px + 60, py + 14, 0x80000000);
+            context.fill(px, py, px + 2, py + 14, cfg.themeColor);
+            context.drawText(tr, "Ping: " + ping + "ms", px + 6, py + 3, 0xFFFFFFFF, false);
+        }
+
+        // 9. Playtime
+        if (cfg.playtime) {
+            int px = cfg.playtimeX;
+            int py = cfg.playtimeY;
+            context.fill(px, py, px + 100, py + 14, 0x80000000);
+            context.fill(px, py, px + 2, py + 14, cfg.themeColor);
+            context.drawText(tr, "Time: " + getPlaytime(), px + 6, py + 3, 0xFFFFFFFF, false);
+        }
+
+        // 10. Reach Display
+        if (cfg.reachDisplay) {
+            int rx = cfg.reachDisplayX;
+            int ry = cfg.reachDisplayY;
+            context.fill(rx, ry, rx + 70, ry + 14, 0x80000000);
+            context.fill(rx, ry, rx + 2, ry + 14, cfg.themeColor);
+            context.drawText(tr, String.format("Reach: %.2fm", lastReach), rx + 6, ry + 3, 0xFFFFFFFF, false);
+        }
+
+        // 11. Server Address
+        if (cfg.serverAddress) {
+            int sx = cfg.serverAddressX;
+            int sy = cfg.serverAddressY;
+            String addr = "Singleplayer";
+            if (client.getCurrentServerEntry() != null) {
+                addr = client.getCurrentServerEntry().address;
+            }
+            context.fill(sx, sy, sx + 110, sy + 14, 0x80000000);
+            context.fill(sx, sy, sx + 2, sy + 14, cfg.themeColor);
+            context.drawText(tr, "IP: " + addr, sx + 6, sy + 3, 0xFFFFFFFF, false);
+        }
+
+        // 12. Speed Meter
+        if (cfg.speedMeter) {
+            int sx = cfg.speedMeterX;
+            int sy = cfg.speedMeterY;
+            double xDiff = client.player.getX() - client.player.prevX;
+            double zDiff = client.player.getZ() - client.player.prevZ;
+            double speed = Math.sqrt(xDiff * xDiff + zDiff * zDiff) * 20.0;
+            context.fill(sx, sy, sx + 85, sy + 14, 0x80000000);
+            context.fill(sx, sy, sx + 2, sy + 14, cfg.themeColor);
+            context.drawText(tr, String.format("Speed: %.2f m/s", speed), sx + 6, sy + 3, 0xFFFFFFFF, false);
+        }
+
+        // 13. Stopwatch
+        if (cfg.stopwatch) {
+            int sx = cfg.stopwatchX;
+            int sy = cfg.stopwatchY;
+            context.fill(sx, sy, sx + 95, sy + 14, 0x80000000);
+            context.fill(sx, sy, sx + 2, sy + 14, cfg.themeColor);
+            context.drawText(tr, "Timer: " + getStopwatchTime(), sx + 6, sy + 3, 0xFFFFFFFF, false);
+        }
+
+        // 14. Item Counter
+        if (cfg.itemCounter) {
+            int ix = cfg.itemCounterX;
+            int iy = cfg.itemCounterY;
+            int count = 0;
+            ItemStack held = client.player.getMainHandStack();
+            if (!held.isEmpty()) {
+                for (int i = 0; i < client.player.getInventory().size(); i++) {
+                    ItemStack stack = client.player.getInventory().getStack(i);
+                    if (stack.getItem() == held.getItem()) {
+                        count += stack.getCount();
+                    }
+                }
+            }
+            context.fill(ix, iy, ix + 65, iy + 14, 0x80000000);
+            context.fill(ix, iy, ix + 2, iy + 14, cfg.themeColor);
+            context.drawText(tr, "Held: " + count, ix + 6, iy + 3, 0xFFFFFFFF, false);
         }
     }
 
