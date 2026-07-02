@@ -144,6 +144,11 @@ public class FeatherHomeScreen extends Screen {
 
         super.render(context, mouseX, mouseY, delta);
     }
+    
+    @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        // Do nothing to prevent background blur
+    }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
