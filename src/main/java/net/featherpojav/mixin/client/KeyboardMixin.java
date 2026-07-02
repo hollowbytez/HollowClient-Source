@@ -25,12 +25,7 @@ public class KeyboardMixin {
                 }
             }
 
-            // Auto Text Macro (key U, action == 1 is key press)
-            if (FeatherConfig.INSTANCE.autoText && action == 1 && key == org.lwjgl.glfw.GLFW.GLFW_KEY_U) {
-                client.player.networkHandler.sendChatMessage(FeatherConfig.INSTANCE.autoTextCommand);
-                client.player.sendMessage(Text.of("§a[Feather] Executed Auto Text Macro (" + FeatherConfig.INSTANCE.autoTextCommand + ")"), true);
-                ci.cancel();
-            }
+
         }
     }
 }

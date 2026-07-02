@@ -165,7 +165,7 @@ public class FeatherGameMenuScreen extends Screen {
         // --- Render Center Header & Brand ---
         int centerY = this.height / 2 - 130;
         // Small Feather Logo on top of buttons
-        context.drawTexture(logoId, this.width / 2 - 65, centerY, 0, 0, 24, 24, 24, 24);
+        context.drawTexture(logoId, this.width / 2 - 65, centerY, 0.0f, 0.0f, 24, 24, 96, 96);
         context.drawText(this.textRenderer, "FEATHER CLIENT", this.width / 2 - 35, centerY + 8, 0xFFFFFFFF, true);
 
         // --- Render Center Buttons ---

@@ -1,12 +1,11 @@
 package net.featherpojav.client;
 
-import java.io.File;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.featherpojav.client.config.FeatherConfig;
 import net.featherpojav.client.gui.FeatherSettingsScreen;
 import net.featherpojav.client.hud.FeatherHudRenderer;
@@ -16,12 +15,16 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
+import java.io.File;
+
 public class FeatherPojavModClient implements ClientModInitializer {
     public static KeyBinding openSettingsKey;
     public static KeyBinding openHudEditorKey;
     public static KeyBinding zoomKey;
     public static KeyBinding freelookKey;
     public static KeyBinding stopwatchKey;
+    public static KeyBinding autoTextKey;
+    public static KeyBinding toggleSprintKey;
     public static double originalGamma = -1.0;
 
     // Zoom state
@@ -92,6 +95,20 @@ public class FeatherPojavModClient implements ClientModInitializer {
                 "category.featherpojav"
         ));
 
+        autoTextKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.featherpojav.autotext",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_U,
+                "category.featherpojav"
+        ));
+
+        toggleSprintKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.featherpojav.togglesprint",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_I,
+                "category.featherpojav"
+        ));
+
         // Register HUD Render Callback
         HudRenderCallback.EVENT.register((context, tickCounter) -> {
             FeatherHudRenderer.renderHUD(context, tickCounter.getTickDelta(false));
@@ -128,6 +145,23 @@ public class FeatherPojavModClient implements ClientModInitializer {
             // Handle Stopwatch keybind
             if (stopwatchKey.wasPressed() && FeatherConfig.INSTANCE.stopwatch) {
                 FeatherHudRenderer.toggleStopwatch();
+            }
+
+            // Handle Auto Text macro keybind (with click consumption)
+            if (FeatherConfig.INSTANCE.autoText) {
+                while (autoTextKey.wasPressed()) {
+                    if (client.player.networkHandler != null) {
+                        client.player.networkHandler.sendChatMessage(FeatherConfig.INSTANCE.autoTextCommand);
+                        client.player.sendMessage(Text.of("§a[Feather] Executed Auto Text Macro (" + FeatherConfig.INSTANCE.autoTextCommand + ")"), true);
+                    }
+                }
+            }
+
+            // Handle Toggle Sprint keypress
+            while (toggleSprintKey.wasPressed()) {
+                FeatherConfig.INSTANCE.toggleSprint = !FeatherConfig.INSTANCE.toggleSprint;
+                FeatherConfig.save();
+                client.player.sendMessage(Text.of("§a[Feather] Toggle Sprint: " + (FeatherConfig.INSTANCE.toggleSprint ? "§2Enabled" : "§4Disabled")), true);
             }
 
             // Handle Zoom status

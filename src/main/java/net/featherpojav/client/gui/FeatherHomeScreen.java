@@ -101,7 +101,7 @@ public class FeatherHomeScreen extends Screen {
         // --- Render Center Header & Brand ---
         int centerY = this.height / 2 - 120;
         Identifier logoId = Identifier.of("featherpojav", "icon.png");
-        context.drawTexture(logoId, this.width / 2 - 60, centerY, 0, 0, 20, 20, 20, 20);
+        context.drawTexture(logoId, this.width / 2 - 60, centerY, 0.0f, 0.0f, 20, 20, 96, 96);
         context.drawText(this.textRenderer, "FEATHER CLIENT", this.width / 2 - 35, centerY + 6, 0xFFFFFFFF, true);
 
         // --- Render Center Main Buttons ---

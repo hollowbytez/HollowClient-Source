@@ -22,8 +22,8 @@ public class ItemEntityRendererMixin {
         if (FeatherConfig.INSTANCE.itemPhysics) {
             // Apply physics rotation and flat lay if on the ground or floating in water
             if (entity.isOnGround() || entity.isSubmergedInWater()) {
-                // Lower slightly so item rests directly on block surface without clipping
-                matrices.translate(0.0, -0.06, 0.0);
+                // Float slightly above block surface to prevent Z-fighting/clipping on mobile depth buffers
+                matrices.translate(0.0, 0.03, 0.0);
 
                 // Rotate 90 degrees around X-axis to lay it flat (1.5707963f radians is 90 degrees)
                 matrices.multiply(new Quaternionf().rotationX(1.5707963f));
