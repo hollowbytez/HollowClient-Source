@@ -45,6 +45,7 @@ public class FeatherSettingsScreen extends Screen {
     private int navBarH;
     private int filterBarH;
     private double scrollY = 0;
+    private boolean isDraggingScrollbar = false;
 
     public FeatherSettingsScreen(Screen parent) {
         super(Text.of("Feather Mod Menu"));
@@ -502,6 +503,21 @@ public class FeatherSettingsScreen extends Screen {
         int gridTop = bodyY + filterBarH + 2;
         int gridH = bodyY + (panelH - navBarH) - gridTop - pad;
 
+        // Scrollbar Click Handle
+        int trackX = panelX + panelW - 8;
+        if (mouseX >= trackX - 5 && mouseX <= trackX + 10 && mouseY >= gridTop && mouseY <= gridTop + gridH) {
+            isDraggingScrollbar = true;
+            int rows = (int) Math.ceil((double) getFilteredCards().size() / cols);
+            int totalH = rows * (cardH + pad);
+            if (totalH > gridH) {
+                int maxScroll = totalH - gridH;
+                int barH = Math.max(10, (int)((gridH / (float)totalH) * gridH));
+                double scrollRatio = (mouseY - gridTop - (barH / 2.0)) / (double)(gridH - barH);
+                scrollY = Math.max(0, Math.min(maxScroll, scrollRatio * maxScroll));
+            }
+            return true;
+        }
+
         List<ModCard> filtered = getFilteredCards();
         int idx = 0;
         for (ModCard card : filtered) {
@@ -558,6 +574,36 @@ public class FeatherSettingsScreen extends Screen {
     @Override
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
         super.renderBackground(context, mouseX, mouseY, delta);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0 && isDraggingScrollbar) {
+            isDraggingScrollbar = false;
+            return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (isDraggingScrollbar) {
+            int bodyY = panelY + navBarH;
+            int gridTop = bodyY + filterBarH + 2;
+            int pad = 8;
+            int gridH = bodyY + (panelH - navBarH) - gridTop - pad;
+            int cols = getCols();
+            int rows = (int) Math.ceil((double) getFilteredCards().size() / cols);
+            int totalH = rows * (getCardH() + pad);
+            if (totalH > gridH) {
+                int maxScroll = totalH - gridH;
+                int barH = Math.max(10, (int)((gridH / (float)totalH) * gridH));
+                double scrollRatio = (mouseY - gridTop - (barH / 2.0)) / (double)(gridH - barH);
+                scrollY = Math.max(0, Math.min(maxScroll, scrollRatio * maxScroll));
+            }
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     @Override
