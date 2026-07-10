@@ -117,6 +117,7 @@ public class HollowAuthScreen extends Screen {
         new Thread(() -> {
             try {
                 String hwid = getHWID();
+                String username = this.client != null && this.client.getSession() != null ? this.client.getSession().getUsername() : "Unknown";
 
                 // 1. Verify Key & HWID
                 String verifyUrl = "https://hollowclient-source.onrender.com/api/verify";
@@ -124,7 +125,7 @@ public class HollowAuthScreen extends Screen {
                 HttpRequest verifyRequest = HttpRequest.newBuilder()
                         .uri(URI.create(verifyUrl))
                         .header("Content-Type", "application/json")
-                        .POST(HttpRequest.BodyPublishers.ofString("{\"key\":\"" + key + "\",\"hwid\":\"" + hwid + "\"}"))
+                        .POST(HttpRequest.BodyPublishers.ofString("{\"key\":\"" + key + "\",\"hwid\":\"" + hwid + "\",\"username\":\"" + username + "\"}"))
                         .build();
 
                 HttpResponse<String> verifyResponse = client.send(verifyRequest, HttpResponse.BodyHandlers.ofString());

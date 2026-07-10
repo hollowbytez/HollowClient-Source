@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✦ HOLLOW CLIENT - ADMIN PANEL ✦</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-darker: #08060a;
+      --bg-dark: #120e16;
+      --bg-card: rgba(22, 16, 28, 0.65);
+      --accent-pink: #ff1a55;
+      --accent-red: #c20c30;
+      --accent-glow: rgba(255, 26, 85, 0.35);
+      --text-main: #f0edf4;
+      --text-muted: #8c8296;
+      --border-color: rgba(255, 26, 85, 0.15);
+      --border-hover: rgba(255, 26, 85, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-darker);
+      color: var(--text-main);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-darker);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 26, 85, 0.3);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-pink);
+    }
+
+    /* --- LOGIN PANEL --- */
+    #login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #1b0e22 0%, var(--bg-darker) 100%);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: opacity 0.5s ease;
+    }
+
+    .login-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), 0 0 15px var(--border-color);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      animation: pulseBorder 4s infinite alternate;
+    }
+
+    .login-card h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+      background: linear-gradient(45deg, #ffffff, var(--accent-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .login-card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--accent-pink);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .input-group input, select {
+      width: 100%;
+      background: rgba(10, 8, 14, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--text-main);
+      font-size: 15px;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .input-group input:focus, select:focus {
+      border-color: var(--accent-pink);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent-pink), var(--accent-red));
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 26, 85, 0.4);
+      transition: all 0.3s ease;
+      letter-spacing: 1px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 26, 85, 0.6), 0 0 10px rgba(255, 26, 85, 0.4);
+    }
+
+    .login-error {
+      color: #ff3b3b;
+      font-size: 14px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    /* --- MAIN LAYOUT --- */
+    #sidebar {
+      width: 260px;
+      background: var(--bg-dark);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      left: 0;
+      top: 0;
+    }
+
+    .brand {
+      padding: 30px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand img {
+      width: 32px;
+      height: 32px;
+      filter: drop-shadow(0 0 6px var(--accent-pink));
+    }
+
+    .brand h2 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: white;
+    }
+
+    .nav-links {
+      list-style: none;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-grow: 1;
+    }
+
+    .nav-links li a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-links li.active a, .nav-links li a:hover {
+      color: white;
+      background: rgba(255, 26, 85, 0.1);
+      border-left: 3px solid var(--accent-pink);
+    }
+
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--accent-pink);
+      color: var(--accent-pink);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+      transition: all 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: var(--accent-pink);
+      color: white;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    #main-content {
+      margin-left: 260px;
+      flex-grow: 1;
+      padding: 40px;
+      max-width: 1300px;
+    }
+
+    .header-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 35px;
+    }
+
+    .header-panel h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      background: linear-gradient(45deg, #ffffff, var(--accent-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* --- CARDS & STATS --- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-hover);
+    }
+
+    .stat-card h3 {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .stat-card .value {
+      font-size: 36px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .stat-card .value.glow-pink {
+      text-shadow: 0 0 10px rgba(255, 26, 85, 0.4);
+    }
+
+    /* --- PANEL CONTAINER & TABLES --- */
+    .dashboard-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+    }
+
+    .panel-header h2 {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* Key Table Style */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      margin-top: 10px;
+    }
+
+    th {
+      color: var(--accent-pink);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 14px 18px;
+      border-bottom: 2px solid var(--border-color);
+      font-weight: 800;
+    }
+
+    td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 14px;
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: rgba(255, 26, 85, 0.03);
+    }
+
+    .key-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      background: rgba(255, 26, 85, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: #ff477e;
+      font-size: 13px;
+    }
+
+    .hwid-text {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge.active {
+      background: rgba(0, 230, 115, 0.12);
+      color: #00ff80;
+      border: 1px solid rgba(0, 230, 115, 0.3);
+      box-shadow: 0 0 6px rgba(0, 230, 115, 0.2);
+    }
+
+    .badge.suspended {
+      background: rgba(255, 179, 0, 0.12);
+      color: #ffc400;
+      border: 1px solid rgba(255, 179, 0, 0.3);
+    }
+
+    .badge.expired {
+      background: rgba(140, 130, 150, 0.15);
+      color: var(--text-muted);
+      border: 1px solid rgba(140, 130, 150, 0.3);
+    }
+
+    .actions-cell {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      border-color: var(--accent-pink);
+      color: var(--accent-pink);
+    }
+
+    .action-btn.btn-delete:hover {
+      border-color: #ff3b3b;
+      color: #ff3b3b;
+      background: rgba(255, 59, 59, 0.05);
+    }
+
+    /* Modal Form style */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(8, 6, 10, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 1100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 0 20px var(--border-color);
+      border-radius: 16px;
+      padding: 35px;
+      width: 100%;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .modal-header h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .close-modal {
+      color: var(--text-muted);
+      font-size: 24px;
+      cursor: pointer;
+      font-weight: 300;
+    }
+
+    .close-modal:hover {
+      color: var(--accent-pink);
+    }
+
+    /* Search filter section */
+    .filter-panel {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .search-input {
+      flex-grow: 1;
+      background: rgba(20, 16, 28, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 16px;
+      color: white;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-pink);
+    }
+
+    /* Animations */
+    @keyframes pulseBorder {
+      0% { border-color: rgba(255, 26, 85, 0.15); }
+      100% { border-color: rgba(255, 26, 85, 0.45); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 25px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. LOGIN SCREEN -->
+  <div id="login-overlay">
+    <div class="login-card">
+      <img src="logo.png" alt="Logo" width="48" style="margin-bottom: 15px; filter: drop-shadow(0 0 8px var(--accent-pink));">
+      <h1>HOLLOW CLIENT</h1>
+      <p>Enter Admin Access Token</p>
+      <div class="input-group">
+        <label for="admin-token">Access Token</label>
+        <input type="password" id="admin-token" placeholder="••••••••••••••••" onkeydown="if(event.key === 'Enter') attemptLogin()">
+      </div>
+      <button class="btn" onclick="attemptLogin()">AUTHORIZE</button>
+      <div id="login-err" class="login-error">Invalid Authorization Token!</div>
+    </div>
+  </div>
+
+  <!-- 2. SIDEBAR NAVIGATION -->
+  <div id="sidebar">
+    <div class="brand">
+      <img src="logo.png" alt="Logo">
+      <h2>HOLLOW PANEL</h2>
+    </div>
+    <ul class="nav-links">
+      <li class="active" id="nav-dash"><a href="#" onclick="switchTab('dash')">📊 Dashboard</a></li>
+      <li id="nav-keys"><a href="#" onclick="switchTab('keys')">🔑 Keys Manager</a></li>
+      <li id="nav-blacklist"><a href="#" onclick="switchTab('blacklist')">🚫 HWID Blacklist</a></li>
+      <li id="nav-updates"><a href="#" onclick="switchTab('updates')">⚙️ Client Updates</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="logout()">LOGOUT</button>
+    </div>
+  </div>
+
+  <!-- 3. MAIN WORKSPACE -->
+  <div id="main-content">
+    <div class="header-panel">
+      <h1 id="tab-title">Admin Dashboard</h1>
+      <div>
+        <button class="btn" style="padding: 10px 20px;" onclick="openGenerateModal()">+ Generate Keys</button>
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Keys</h3>
+        <div class="value" id="stat-total">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Active Keys</h3>
+        <div class="value glow-pink" style="color: var(--accent-pink);" id="stat-active">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Banned HWIDs</h3>
+        <div class="value" style="color: #ff3b3b;" id="stat-banned">0</div>
+      </div>
+      <div class="stat-card">
+        <h3>Expired Keys</h3>
+        <div class="value" id="stat-expired">0</div>
+      </div>
+    </div>
+
+    <!-- TAB 1: DASHBOARD -->
+    <div id="tab-content-dash" class="tab-pane">
+      <div class="grid-2">
+        <div class="dashboard-panel">
+          <div class="panel-header">
+            <h2>Recent Active Users</h2>
+          </div>
+          <table id="recent-users-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Linked Key</th>
+                <th>First HWID</th>
+                <th>Device Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamic Rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="dashboard-panel">
+          <div class="panel-header">
+            <h2>System Status</h2>
+          </div>
+          <div style="font-size: 15px; line-height: 1.8;">
+            <p>🟢 Database: <strong>Connected</strong></p>
+            <p>💻 Node Runtime: <strong>Node.js v24.14.1</strong></p>
+            <p>🔒 Security: <strong>Access Token Active</strong></p>
+            <p>🔌 Server Port: <strong>10000</strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: KEYS MANAGER -->
+    <div id="tab-content-keys" class="tab-pane hidden">
+      <div class="dashboard-panel">
+        <div class="panel-header">
+          <h2>Manage License Keys</h2>
+        </div>
+        <div class="filter-panel">
+          <input type="text" class="search-input" id="key-search" placeholder="Search by Key string, HWID, or Username..." onkeyup="filterKeys()">
+          <select id="status-filter" style="width: 180px;" onchange="filterKeys()">
+            <option value="all">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+            <option value="expired">Expired</option>
+          </select>
+        </div>
+        <table id="keys-table">
+          <thead>
+            <tr>
+              <th>License Key</th>
+              <th>Status</th>
+              <th>HWIDs Bound</th>
+              <th>Last User</th>
+              <th>Limit</th>
+              <th>Expires At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Dynamic Rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: BLACKLIST -->
+    <div id="tab-content-blacklist" class="tab-pane hidden">
+      <div class="grid-2">
+        <div class="dashboard-panel">
+          <div class="panel-header">
+            <h2>Banned HWIDs</h2>
+          </div>
+          <table id="blacklist-table">
+            <thead>
+              <tr>
+                <th>Hardware ID (HWID)</th>
+                <th>Ban Reason</th>
+                <th>Banned Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamic Rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="dashboard-panel">
+          <div class="panel-header">
+            <h2>Ban Hardware</h2>
+          </div>
+          <div class="input-group">
+            <label for="ban-hwid-input">Hardware ID (HWID)</label>
+            <input type="text" id="ban-hwid-input" placeholder="e.g. 84F3C8A90B2D491A">
+          </div>
+          <div class="input-group">
+            <label for="ban-reason-input">Reason for ban</label>
+            <input type="text" id="ban-reason-input" placeholder="e.g. Chargeback, Exploitation, Charge charge">
+          </div>
+          <button class="btn" onclick="submitBan()">BLACKLIST HWID</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: CLIENT UPDATES -->
+    <div id="tab-content-updates" class="tab-pane hidden">
+      <div class="dashboard-panel" style="max-width: 600px;">
+        <div class="panel-header">
+          <h2>Push Client Update</h2>
+        </div>
+        <div class="input-group">
+          <label for="update-version">Latest Version</label>
+          <input type="text" id="update-version" placeholder="e.g. 1.0.1">
+        </div>
+        <div class="input-group">
+          <label for="update-url">Download URL (.jar)</label>
+          <input type="text" id="update-url" placeholder="https://github.com/hollowbytez/HollowClient/raw/main/hollowclient-1.0.1.jar">
+        </div>
+        <div class="input-group">
+          <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-transform: none;">
+            <input type="checkbox" id="update-mandatory" checked style="width: 18px; height: 18px;">
+            Force Mandatory Update (Stops game startup until downloaded)
+          </label>
+        </div>
+        <button class="btn" onclick="pushClientUpdate()">PUBLISH CLIENT UPDATE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY GENERATOR MODAL -->
+  <div class="modal" id="gen-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Generate Licenses</h2>
+        <span class="close-modal" onclick="closeGenerateModal()">&times;</span>
+      </div>
+      <div class="input-group">
+        <label for="gen-prefix">Key Prefix</label>
+        <input type="text" id="gen-prefix" value="HOLLOW">
+      </div>
+      <div class="input-group">
+        <label for="gen-amount">Quantity of Keys</label>
+        <input type="number" id="gen-amount" value="5" min="1" max="100">
+      </div>
+      <div class="input-group">
+        <label for="gen-limit">Max Device Limit (Devices per Key)</label>
+        <input type="number" id="gen-limit" value="1" min="1">
+      </div>
+      <div class="input-group">
+        <label for="gen-days">Expiration Duration (Days - Blank/0 for Lifetime)</label>
+        <input type="number" id="gen-days" value="0" min="0">
+      </div>
+      <button class="btn" onclick="submitGenerateKeys()">GENERATE KEYS</button>
+    </div>
+  </div>
+
+  <script>
+    let adminToken = localStorage.getItem('hollow_admin_token') || '';
+    let globalKeysList = [];
+
+    // On startup, check if we have a saved token
+    if (adminToken) {
+      document.getElementById('login-overlay').style.display = 'none';
+      loadAllData();
+    }
+
+    function attemptLogin() {
+      const input = document.getElementById('admin-token').value;
+      if (!input) return;
+
+      fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${input}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          adminToken = input;
+          localStorage.setItem('hollow_admin_token', input);
+          document.getElementById('login-overlay').style.opacity = 0;
+          setTimeout(() => {
+            document.getElementById('login-overlay').style.display = 'none';
+          }, 500);
+          loadAllData();
+        } else {
+          showLoginError();
+        }
+      })
+      .catch(() => showLoginError());
+    }
+
+    function showLoginError() {
+      const err = document.getElementById('login-err');
+      err.style.display = 'block';
+      setTimeout(() => err.style.display = 'none', 3000);
+    }
+
+    function logout() {
+      localStorage.removeItem('hollow_admin_token');
+      location.reload();
+    }
+
+    // Switch between navigation tabs
+    function switchTab(tabId) {
+      const paneIds = ['dash', 'keys', 'blacklist', 'updates'];
+      paneIds.forEach(id => {
+        document.getElementById(`tab-content-${id}`).classList.add('hidden');
+        document.getElementById(`nav-${id}`).classList.remove('active');
+      });
+
+      document.getElementById(`tab-content-${tabId}`).classList.remove('hidden');
+      document.getElementById(`nav-${tabId}`).classList.add('active');
+
+      const titles = {
+        'dash': 'Admin Dashboard',
+        'keys': 'Keys Manager',
+        'blacklist': 'HWID Blacklist',
+        'updates': 'Client Updates & Settings'
+      };
+      document.getElementById('tab-title').innerText = titles[tabId];
+      
+      // Load specific tab data
+      if (tabId === 'keys') loadKeysTable();
+      if (tabId === 'blacklist') loadBlacklistTable();
+    }
+
+    // Fetch stats and lists from Server API
+    function loadAllData() {
+      loadStats();
+      loadRecentUsers();
+    }
+
+    function loadStats() {
+      fetch('/api/admin/stats', {
+        headers: { 'Authorization': `Bearer ${adminToken}` }
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('stat-total').innerText = data.totalKeys;
+        document.getElementById('stat-active').innerText = data.activeKeys;
+        document.getElementById('stat-banned').innerText = data.bannedHwids;
+        document.getElementById('stat-expired').innerText = data.expiredKeys;
+      });
+    }
+
+    function loadRecentUsers() {
+      fetch('/api/admin/keys', {
+        headers: { 'Authorization': `Bearer ${adminToken}` }
+      })
+      .then(res => res.json())
+      .then(keys => {
+        const tbody = document.querySelector('#recent-users-table tbody');
+        tbody.innerHTML = '';
+        
+        // Filter keys that have active HWIDs bound to show active users
+        const activeUsers = keys.filter(k => k.hwids && k.hwids.length > 0).slice(0, 5);
+        
+        if (activeUsers.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No active devices bound yet.</td></tr>';
+          return;
+        }
+
+        activeUsers.forEach(u => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${u.username || 'Unknown'}</strong></td>
+            <td><span class="key-text">${u.key}</span></td>
+            <td><span class="hwid-text">${u.hwids[0]}</span></td>
+            <td>${u.hwids.length} / ${u.maxDevices}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function loadKeysTable() {
+      fetch('/api/admin/keys', {
+        headers: { 'Authorization': `Bearer ${adminToken}` }
+      })
+      .then(res => res.json())
+      .then(keys => {
+        globalKeysList = keys;
+        renderKeysTable(keys);
+      });
+    }
+
+    function renderKeysTable(keys) {
+      const tbody = document.querySelector('#keys-table tbody');
+      tbody.innerHTML = '';
+
+      if (keys.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">No keys found. Click "+ Generate Keys" to start!</td></tr>';
+        return;
+      }
+
+      keys.forEach(k => {
+        // Expiry check
+        const isExpired = k.expiresAt && new Date(k.expiresAt) < new Date();
+        const displayStatus = isExpired ? 'expired' : k.status;
+        
+        const hwidsHtml = k.hwids.length > 0 
+          ? k.hwids.map(h => `<div class="hwid-text">${h}</div>`).join('') 
+          : '<span style="color:var(--text-muted);">None</span>';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><span class="key-text">${k.key}</span></td>
+          <td><span class="badge ${displayStatus}">${displayStatus}</span></td>
+          <td>${hwidsHtml}</td>
+          <td><strong>${k.username || '-'}</strong></td>
+          <td>${k.hwids.length} / ${k.maxDevices}</td>
+          <td>${k.expiresAt ? new Date(k.expiresAt).toLocaleDateString() : 'Lifetime'}</td>
+          <td class="actions-cell">
+            ${k.status === 'active' 
+              ? `<button class="action-btn" onclick="keyAction('${k.key}', 'suspend')">Suspend</button>`
+              : `<button class="action-btn" style="border-color:#00ff80; color:#00ff80;" onclick="keyAction('${k.key}', 'activate')">Activate</button>`
+            }
+            <button class="action-btn" onclick="keyAction('${k.key}', 'reset_hwid')">Reset HWID</button>
+            <button class="action-btn btn-delete" onclick="keyAction('${k.key}', 'delete')">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterKeys() {
+      const search = document.getElementById('key-search').value.toLowerCase();
+      const status = document.getElementById('status-filter').value;
+
+      const filtered = globalKeysList.filter(k => {
+        // Status filter
+        const isExpired = k.expiresAt && new Date(k.expiresAt) < new Date();
+        const currentStatus = isExpired ? 'expired' : k.status;
+        
+        if (status !== 'all' && currentStatus !== status) return false;
+
+        // Search query
+        const keyMatch = k.key.toLowerCase().includes(search);
+        const userMatch = k.username && k.username.toLowerCase().includes(search);
+        const hwidMatch = k.hwids.some(h => h.toLowerCase().includes(search));
+
+        return keyMatch || userMatch || hwidMatch;
+      });
+
+      renderKeysTable(filtered);
+    }
+
+    function keyAction(key, action) {
+      if (action === 'delete' && !confirm(`Are you absolutely sure you want to delete key: ${key}?`)) return;
+      if (action === 'reset_hwid' && !confirm(`Reset device locks for key: ${key}?`)) return;
+
+      fetch('/api/admin/keys/action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`
+        },
+        body: JSON.stringify({ key, action })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          loadKeysTable();
+          loadStats();
+        }
+      });
+    }
+
+    // Blacklist
+    function loadBlacklistTable() {
+      fetch('/api/admin/blacklist', {
+        headers: { 'Authorization': `Bearer ${adminToken}` }
+      })
+      .then(res => res.json())
+      .then(list => {
+        const tbody = document.querySelector('#blacklist-table tbody');
+        tbody.innerHTML = '';
+
+        if (list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No blacklisted hardware IDs.</td></tr>';
+          return;
+        }
+
+        list.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><span class="hwid-text" style="color:#ff3b3b; font-weight:bold;">${item.hwid}</span></td>
+            <td>${item.reason}</td>
+            <td>${new Date(item.bannedAt).toLocaleString()}</td>
+            <td>
+              <button class="action-btn" style="border-color:#00ff80; color:#00ff80;" onclick="unbanHwid('${item.hwid}')">Unban</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function submitBan() {
+      const hwid = document.getElementById('ban-hwid-input').value.trim();
+      const reason = document.getElementById('ban-reason-input').value.trim();
+
+      if (!hwid) {
+        alert('Please enter an HWID to ban!');
+        return;
+      }
+
+      fetch('/api/admin/blacklist/ban', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`
+        },
+        body: JSON.stringify({ hwid, reason })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('ban-hwid-input').value = '';
+          document.getElementById('ban-reason-input').value = '';
+          loadBlacklistTable();
+          loadStats();
+          alert('Hardware ID successfully banned!');
+        } else {
+          alert(`Error: ${data.message}`);
+        }
+      });
+    }
+
+    function unbanHwid(hwid) {
+      if (!confirm(`Unban hardware ID: ${hwid}?`)) return;
+
+      fetch('/api/admin/blacklist/unban', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`
+        },
+        body: JSON.stringify({ hwid })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          loadBlacklistTable();
+          loadStats();
+        }
+      });
+    }
+
+    // Updates
+    function pushClientUpdate() {
+      const version = document.getElementById('update-version').value.trim();
+      const downloadUrl = document.getElementById('update-url').value.trim();
+      const mandatory = document.getElementById('update-mandatory').checked;
+
+      if (!version || !downloadUrl) {
+        alert('Please fill out all update fields!');
+        return;
+      }
+
+      fetch('/api/admin/version', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`
+        },
+        body: JSON.stringify({ version, downloadUrl, mandatory })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('Client version update pushed successfully!');
+          document.getElementById('update-version').value = '';
+          document.getElementById('update-url').value = '';
+        } else {
+          alert(`Error: ${data.message}`);
+        }
+      });
+    }
+
+    // Modal Control
+    function openGenerateModal() {
+      document.getElementById('gen-modal').style.display = 'flex';
+    }
+
+    function closeGenerateModal() {
+      document.getElementById('gen-modal').style.display = 'none';
+    }
+
+    function submitGenerateKeys() {
+      const prefix = document.getElementById('gen-prefix').value.trim();
+      const amount = document.getElementById('gen-amount').value;
+      const maxDevices = document.getElementById('gen-limit').value;
+      const durationDays = document.getElementById('gen-days').value;
+
+      fetch('/api/admin/keys/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`
+        },
+        body: JSON.stringify({ prefix, amount, maxDevices, durationDays })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          closeGenerateModal();
+          loadAllData();
+          if (document.getElementById('tab-content-keys').classList.contains('hidden') === false) {
+            loadKeysTable();
+          }
+          alert(`Successfully generated ${data.keys.length} keys!`);
+        } else {
+          alert(`Error generating keys: ${data.message}`);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
