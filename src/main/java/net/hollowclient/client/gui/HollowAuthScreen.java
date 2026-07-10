@@ -257,7 +257,7 @@ public class HollowAuthScreen extends Screen {
         }
     }
 
-    private static String getHWID() {
+    public static String getHWID() {
         try {
             String mainString = System.getProperty("os.name") +
                                 System.getProperty("os.arch") +

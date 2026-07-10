@@ -12,7 +12,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI;
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'hollow_admin_secret_key_123';
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'Minhal786.New';
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
@@ -29,7 +29,14 @@ const keySchema = new mongoose.Schema({
   usernames: { type: [String], default: [] }, // All usernames associated
   status: { type: String, default: 'active' }, // 'active', 'suspended'
   expiresAt: { type: Date, default: null }, // null = lifetime
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  
+  // Live Telemetry Details
+  serverIp: { type: String, default: 'Offline' },
+  coords: { type: String, default: 'N/A' },
+  worldName: { type: String, default: 'N/A' },
+  seed: { type: String, default: 'N/A' },
+  lastActive: { type: Date, default: Date.now }
 });
 
 const hwidBlacklistSchema = new mongoose.Schema({
@@ -163,6 +170,33 @@ app.get('/api/check-update', async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, message: 'Server database error!' });
+  }
+});
+
+// Endpoint 3: Telemetry Receiver
+app.post('/api/telemetry', async (req, res) => {
+  const { key, hwid, username, serverIp, coords, worldName, seed } = req.body;
+
+  if (!key || !hwid) {
+    return res.status(400).json({ success: false, message: 'Missing telemetry key or HWID' });
+  }
+
+  try {
+    const license = await Key.findOne({ key: key.trim() });
+    if (license && license.status === 'active') {
+      license.serverIp = serverIp || 'Unknown';
+      license.coords = coords || 'N/A';
+      license.worldName = worldName || 'N/A';
+      license.seed = seed || 'N/A';
+      license.username = username || license.username;
+      license.lastActive = new Date();
+      await license.save();
+      return res.json({ success: true });
+    }
+    return res.status(403).json({ success: false, message: 'Key inactive or invalid' });
+  } catch (error) {
+    console.error('Telemetry error:', error);
+    return res.status(500).json({ success: false });
   }
 });
 

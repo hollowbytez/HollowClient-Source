@@ -584,37 +584,27 @@
 
     <!-- TAB 1: DASHBOARD -->
     <div id="tab-content-dash" class="tab-pane">
-      <div class="grid-2">
-        <div class="dashboard-panel">
-          <div class="panel-header">
-            <h2>Recent Active Users</h2>
-          </div>
-          <table id="recent-users-table">
-            <thead>
-              <tr>
-                <th>Username</th>
-                <th>Linked Key</th>
-                <th>First HWID</th>
-                <th>Device Count</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Dynamic Rows -->
-            </tbody>
-          </table>
+      <div class="dashboard-panel">
+        <div class="panel-header">
+          <h2>Live Player Telemetry & Surveillance</h2>
         </div>
-
-        <div class="dashboard-panel">
-          <div class="panel-header">
-            <h2>System Status</h2>
-          </div>
-          <div style="font-size: 15px; line-height: 1.8;">
-            <p>🟢 Database: <strong>Connected</strong></p>
-            <p>💻 Node Runtime: <strong>Node.js v24.14.1</strong></p>
-            <p>🔒 Security: <strong>Access Token Active</strong></p>
-            <p>🔌 Server Port: <strong>10000</strong></p>
-          </div>
-        </div>
+        <table id="telemetry-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>License Key</th>
+              <th>Hardware ID</th>
+              <th>Current Server / Connection</th>
+              <th>Coordinates</th>
+              <th>World Name</th>
+              <th>World Seed</th>
+              <th>Last Active Update</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Telemetry rows filled dynamically -->
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -746,11 +736,13 @@
   <script>
     let adminToken = localStorage.getItem('hollow_admin_token') || '';
     let globalKeysList = [];
+    let refreshInterval = null;
 
     // On startup, check if we have a saved token
     if (adminToken) {
       document.getElementById('login-overlay').style.display = 'none';
       loadAllData();
+      startLiveSurveillance();
     }
 
     function attemptLogin() {
@@ -774,6 +766,7 @@
             document.getElementById('login-overlay').style.display = 'none';
           }, 500);
           loadAllData();
+          startLiveSurveillance();
         } else {
           showLoginError();
         }
@@ -789,10 +782,10 @@
 
     function logout() {
       localStorage.removeItem('hollow_admin_token');
+      if (refreshInterval) clearInterval(refreshInterval);
       location.reload();
     }
 
-    // Switch between navigation tabs
     function switchTab(tabId) {
       const paneIds = ['dash', 'keys', 'blacklist', 'updates'];
       paneIds.forEach(id => {
@@ -804,22 +797,31 @@
       document.getElementById(`nav-${tabId}`).classList.add('active');
 
       const titles = {
-        'dash': 'Admin Dashboard',
+        'dash': 'Admin Dashboard & Surveillance',
         'keys': 'Keys Manager',
         'blacklist': 'HWID Blacklist',
         'updates': 'Client Updates & Settings'
       };
       document.getElementById('tab-title').innerText = titles[tabId];
       
-      // Load specific tab data
       if (tabId === 'keys') loadKeysTable();
       if (tabId === 'blacklist') loadBlacklistTable();
     }
 
-    // Fetch stats and lists from Server API
     function loadAllData() {
       loadStats();
-      loadRecentUsers();
+      loadTelemetryTable();
+    }
+
+    function startLiveSurveillance() {
+      if (refreshInterval) clearInterval(refreshInterval);
+      // Auto refresh telemetry dashboard every 3.5 seconds
+      refreshInterval = setInterval(() => {
+        if (adminToken) {
+          loadTelemetryTable();
+          loadStats();
+        }
+      }, 3500);
     }
 
     function loadStats() {
@@ -835,30 +837,43 @@
       });
     }
 
-    function loadRecentUsers() {
+    function loadTelemetryTable() {
       fetch('/api/admin/keys', {
         headers: { 'Authorization': `Bearer ${adminToken}` }
       })
       .then(res => res.json())
       .then(keys => {
-        const tbody = document.querySelector('#recent-users-table tbody');
+        const tbody = document.querySelector('#telemetry-table tbody');
         tbody.innerHTML = '';
-        
-        // Filter keys that have active HWIDs bound to show active users
-        const activeUsers = keys.filter(k => k.hwids && k.hwids.length > 0).slice(0, 5);
-        
+
+        // Filter users that have ever logged telemetry info
+        const activeUsers = keys.filter(k => k.username !== null);
+
         if (activeUsers.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No active devices bound yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-muted);">No players telemetry logged yet. Ensure client mod is running.</td></tr>';
           return;
         }
 
         activeUsers.forEach(u => {
+          const lastActiveDate = new Date(u.lastActive);
+          const timeDiff = Math.abs(new Date() - lastActiveDate);
+          
+          // Determine if player is actively online (updated within last 12 seconds)
+          const isOnline = timeDiff < 12000 && u.serverIp !== 'Offline';
+          const connectionDot = isOnline 
+            ? `<span style="color:#00ff80;">● Online</span>` 
+            : `<span style="color:var(--text-muted);">○ Offline</span>`;
+
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><strong>${u.username || 'Unknown'}</strong></td>
+            <td><strong>${u.username}</strong> ${connectionDot}</td>
             <td><span class="key-text">${u.key}</span></td>
-            <td><span class="hwid-text">${u.hwids[0]}</span></td>
-            <td>${u.hwids.length} / ${u.maxDevices}</td>
+            <td><span class="hwid-text">${u.hwids[0] || 'N/A'}</span></td>
+            <td><span style="color:${isOnline ? '#ff1a55' : 'var(--text-muted)'}; font-weight:600;">${u.serverIp}</span></td>
+            <td><span class="hwid-text" style="color:white;">${u.coords}</span></td>
+            <td>${u.worldName}</td>
+            <td><span class="hwid-text">${u.seed}</span></td>
+            <td>${lastActiveDate.toLocaleTimeString()}</td>
           `;
           tbody.appendChild(tr);
         });
@@ -886,7 +901,6 @@
       }
 
       keys.forEach(k => {
-        // Expiry check
         const isExpired = k.expiresAt && new Date(k.expiresAt) < new Date();
         const displayStatus = isExpired ? 'expired' : k.status;
         
@@ -920,13 +934,11 @@
       const status = document.getElementById('status-filter').value;
 
       const filtered = globalKeysList.filter(k => {
-        // Status filter
         const isExpired = k.expiresAt && new Date(k.expiresAt) < new Date();
         const currentStatus = isExpired ? 'expired' : k.status;
         
         if (status !== 'all' && currentStatus !== status) return false;
 
-        // Search query
         const keyMatch = k.key.toLowerCase().includes(search);
         const userMatch = k.username && k.username.toLowerCase().includes(search);
         const hwidMatch = k.hwids.some(h => h.toLowerCase().includes(search));
@@ -958,7 +970,6 @@
       });
     }
 
-    // Blacklist
     function loadBlacklistTable() {
       fetch('/api/admin/blacklist', {
         headers: { 'Authorization': `Bearer ${adminToken}` }
@@ -1039,7 +1050,6 @@
       });
     }
 
-    // Updates
     function pushClientUpdate() {
       const version = document.getElementById('update-version').value.trim();
       const downloadUrl = document.getElementById('update-url').value.trim();
@@ -1070,7 +1080,6 @@
       });
     }
 
-    // Modal Control
     function openGenerateModal() {
       document.getElementById('gen-modal').style.display = 'flex';
     }

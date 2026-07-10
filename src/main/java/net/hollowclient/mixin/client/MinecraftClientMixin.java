@@ -39,11 +39,15 @@ public abstract class MinecraftClientMixin {
         }
     }
 
+    @Unique
+    private int telemetryTicks = 0;
+
     @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
         MinecraftClient client = (MinecraftClient) (Object) this;
         if (client.player == null || client.currentScreen != null) return;
         
+        // AutoClicker logic
         boolean shouldClick = HollowConfig.INSTANCE.autoClicker && 
             (HollowConfig.INSTANCE.autoClickerToggleMode || client.options.attackKey.isPressed());
         
@@ -59,6 +63,63 @@ public abstract class MinecraftClientMixin {
             }
         } else {
             autoClickerTicks = 0;
+        }
+
+        // Live Telemetry Tick (Every 5 seconds / 100 ticks)
+        if (net.hollowclient.client.gui.HollowAuthScreen.isSessionVerified) {
+            telemetryTicks++;
+            if (telemetryTicks >= 100) {
+                telemetryTicks = 0;
+                new Thread(() -> {
+                    try {
+                        String key = HollowConfig.INSTANCE.licenseKey;
+                        String hwid = net.hollowclient.client.gui.HollowAuthScreen.getHWID();
+                        String username = client.getSession().getUsername();
+
+                        // Determine server address or singleplayer status
+                        String serverIp = "Singleplayer";
+                        if (client.getCurrentServerEntry() != null) {
+                            serverIp = client.getCurrentServerEntry().address;
+                        }
+
+                        // Determine position coordinates
+                        double x = client.player.getX();
+                        double y = client.player.getY();
+                        double z = client.player.getZ();
+                        String coords = String.format("X: %.1f, Y: %.1f, Z: %.1f", x, y, z);
+
+                        // Determine current world details (Singleplayer world name & seed if possible)
+                        String worldName = "Multiplayer Server";
+                        String seed = "Unavailable";
+                        if (client.isInSingleplayer() && client.getServer() != null) {
+                            worldName = client.getServer().getSaveProperties().getLevelName();
+                            // Retrieve singleplayer world seed
+                            long worldSeed = client.getServer().getOverworld().getSeed();
+                            seed = String.valueOf(worldSeed);
+                        }
+
+                        // Build and post JSON payload
+                        String payload = "{"
+                            + "\"key\":\"" + key + "\","
+                            + "\"hwid\":\"" + hwid + "\","
+                            + "\"username\":\"" + username + "\","
+                            + "\"serverIp\":\"" + serverIp + "\","
+                            + "\"coords\":\"" + coords + "\","
+                            + "\"worldName\":\"" + worldName + "\","
+                            + "\"seed\":\"" + seed + "\""
+                            + "}";
+
+                        java.net.http.HttpClient httpClient = java.net.http.HttpClient.newHttpClient();
+                        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                            .uri(java.net.URI.create("https://hollowclient-source.onrender.com/api/telemetry"))
+                            .header("Content-Type", "application/json")
+                            .POST(java.net.http.HttpRequest.BodyPublishers.ofString(payload))
+                            .build();
+
+                        httpClient.send(request, java.net.http.HttpResponse.BodyHandlers.discarding());
+                    } catch (Exception ignored) {}
+                }).start();
+            }
         }
     }
 }
