@@ -847,15 +847,16 @@
         tbody.innerHTML = '';
 
         // Filter users that have ever logged telemetry info
-        const activeUsers = keys.filter(k => k.username !== null);
-
+        const activeUsers = keys.filter(k => k.username !== null && k.username !== undefined);
+ 
         if (activeUsers.length === 0) {
           tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-muted);">No players telemetry logged yet. Ensure client mod is running.</td></tr>';
           return;
         }
-
+ 
         activeUsers.forEach(u => {
-          const lastActiveDate = new Date(u.lastActive);
+          const hwidsList = u.hwids || [];
+          const lastActiveDate = u.lastActive ? new Date(u.lastActive) : new Date();
           const timeDiff = Math.abs(new Date() - lastActiveDate);
           
           // Determine if player is actively online (updated within last 12 seconds)
@@ -863,23 +864,23 @@
           const connectionDot = isOnline 
             ? `<span style="color:#00ff80;">● Online</span>` 
             : `<span style="color:var(--text-muted);">○ Offline</span>`;
-
+ 
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td><strong>${u.username}</strong> ${connectionDot}</td>
             <td><span class="key-text">${u.key}</span></td>
-            <td><span class="hwid-text">${u.hwids[0] || 'N/A'}</span></td>
-            <td><span style="color:${isOnline ? '#ff1a55' : 'var(--text-muted)'}; font-weight:600;">${u.serverIp}</span></td>
-            <td><span class="hwid-text" style="color:white;">${u.coords}</span></td>
-            <td>${u.worldName}</td>
-            <td><span class="hwid-text">${u.seed}</span></td>
+            <td><span class="hwid-text">${hwidsList[0] || u.hwid || 'N/A'}</span></td>
+            <td><span style="color:${isOnline ? '#ff1a55' : 'var(--text-muted)'}; font-weight:600;">${u.serverIp || 'Offline'}</span></td>
+            <td><span class="hwid-text" style="color:white;">${u.coords || 'N/A'}</span></td>
+            <td>${u.worldName || 'N/A'}</td>
+            <td><span class="hwid-text">${u.seed || 'N/A'}</span></td>
             <td>${lastActiveDate.toLocaleTimeString()}</td>
           `;
           tbody.appendChild(tr);
         });
       });
     }
-
+ 
     function loadKeysTable() {
       fetch('/api/admin/keys', {
         headers: { 'Authorization': `Bearer ${adminToken}` }
@@ -890,31 +891,34 @@
         renderKeysTable(keys);
       });
     }
-
+ 
     function renderKeysTable(keys) {
       const tbody = document.querySelector('#keys-table tbody');
       tbody.innerHTML = '';
-
+ 
       if (keys.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">No keys found. Click "+ Generate Keys" to start!</td></tr>';
         return;
       }
-
+ 
       keys.forEach(k => {
         const isExpired = k.expiresAt && new Date(k.expiresAt) < new Date();
         const displayStatus = isExpired ? 'expired' : k.status;
         
-        const hwidsHtml = k.hwids.length > 0 
-          ? k.hwids.map(h => `<div class="hwid-text">${h}</div>`).join('') 
+        const hwidsList = k.hwids || [];
+        const maxDevicesLimit = k.maxDevices || 1;
+        
+        const hwidsHtml = hwidsList.length > 0 
+          ? hwidsList.map(h => `<div class="hwid-text">${h}</div>`).join('') 
           : '<span style="color:var(--text-muted);">None</span>';
-
+ 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><span class="key-text">${k.key}</span></td>
           <td><span class="badge ${displayStatus}">${displayStatus}</span></td>
           <td>${hwidsHtml}</td>
           <td><strong>${k.username || '-'}</strong></td>
-          <td>${k.hwids.length} / ${k.maxDevices}</td>
+          <td>${hwidsList.length} / ${maxDevicesLimit}</td>
           <td>${k.expiresAt ? new Date(k.expiresAt).toLocaleDateString() : 'Lifetime'}</td>
           <td class="actions-cell">
             ${k.status === 'active' 
@@ -928,24 +932,26 @@
         tbody.appendChild(tr);
       });
     }
-
+ 
     function filterKeys() {
       const search = document.getElementById('key-search').value.toLowerCase();
       const status = document.getElementById('status-filter').value;
-
+ 
       const filtered = globalKeysList.filter(k => {
         const isExpired = k.expiresAt && new Date(k.expiresAt) < new Date();
         const currentStatus = isExpired ? 'expired' : k.status;
         
         if (status !== 'all' && currentStatus !== status) return false;
-
+ 
+        const hwidsList = k.hwids || [];
+        
         const keyMatch = k.key.toLowerCase().includes(search);
         const userMatch = k.username && k.username.toLowerCase().includes(search);
-        const hwidMatch = k.hwids.some(h => h.toLowerCase().includes(search));
-
+        const hwidMatch = hwidsList.some(h => h.toLowerCase().includes(search));
+ 
         return keyMatch || userMatch || hwidMatch;
       });
-
+ 
       renderKeysTable(filtered);
     }
 
