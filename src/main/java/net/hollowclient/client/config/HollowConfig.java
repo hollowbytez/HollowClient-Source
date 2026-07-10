@@ -79,6 +79,7 @@ public class HollowConfig {
     public boolean autoClickerToggleMode = false;
 
     public java.util.List<String> highlightedMods = new java.util.ArrayList<>();
+    public String licenseKey = "";
 
     // Custom mod details
     public String autoTextCommand = "/lobby";

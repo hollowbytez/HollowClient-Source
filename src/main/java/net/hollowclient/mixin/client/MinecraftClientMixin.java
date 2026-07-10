@@ -30,7 +30,11 @@ public abstract class MinecraftClientMixin {
     private void onSetScreen(Screen screen, CallbackInfo ci) {
         // Prevent infinite loops and safely inject our custom Home Screen
         if (screen != null && screen.getClass() == TitleScreen.class) {
-            this.setScreen(new net.hollowclient.client.gui.HollowHomeScreen());
+            if (net.hollowclient.client.gui.HollowAuthScreen.isSessionVerified) {
+                this.setScreen(new net.hollowclient.client.gui.HollowHomeScreen());
+            } else {
+                this.setScreen(new net.hollowclient.client.gui.HollowAuthScreen());
+            }
             ci.cancel();
         }
     }
